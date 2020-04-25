@@ -19,6 +19,7 @@ body {
   padding: 40px;
   color: #eec2c2;
   font-style: #eec2c2;
+  height: 60vh;
 }
 
 .custom-border {
@@ -41,7 +42,7 @@ body {
 
 .header {
   margin-top: -20px;
-  height: 35vh;
+  height: 30vh;
   width: 100vw;
   background-color: #eec2c2;
   display: -webkit-box;
@@ -66,7 +67,7 @@ body {
 }
 
 .settings {
-  margin: 0px;
+  margin: 3px;
   display: -webkit-box;
   display: -ms-flexbox;
   display: flex;
@@ -74,9 +75,9 @@ body {
   -webkit-box-direction: normal;
       -ms-flex-direction: row;
           flex-direction: row;
-  -webkit-box-pack: space-evenly;
-      -ms-flex-pack: space-evenly;
-          justify-content: space-evenly;
+  -webkit-box-pack: justify;
+      -ms-flex-pack: justify;
+          justify-content: space-between;
   width: 200px;
 }
 
@@ -85,8 +86,8 @@ body {
 }
 
 .settings-tab {
-  position: relative;
-  top: 130px;
+  position: absolute;
+  top: 51%;
   left: 50%;
   -webkit-transform: translateX(-50%);
           transform: translateX(-50%);
@@ -137,7 +138,7 @@ body {
 }
 
 .timer {
-  position: fixed;
+  position: absolute;
   top: 35%;
   height: 420px;
   left: 50%;
@@ -159,6 +160,13 @@ body {
   color: red;
 }
 
+.timer.break {
+  bottom: 420px;
+  color: blue !important;
+  -webkit-transform: translateX(-50%) rotate(180deg);
+          transform: translateX(-50%) rotate(180deg);
+}
+
 .timer-label {
   font-size: 20px;
   margin: 0px;
@@ -177,9 +185,9 @@ body {
   -webkit-box-direction: normal;
       -ms-flex-direction: row;
           flex-direction: row;
-  -webkit-box-pack: space-evenly;
-      -ms-flex-pack: space-evenly;
-          justify-content: space-evenly;
+  -webkit-box-pack: justify;
+      -ms-flex-pack: justify;
+          justify-content: space-between;
   width: 200px;
 }
 

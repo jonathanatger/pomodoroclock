@@ -58,12 +58,11 @@ class App extends React.Component {
       <div>
         <div className="header">
           <h1 className="main-title">Pomodoro Clock</h1>
+          
         </div>
         <div className="app" >
           <Timer workState="Work" />
-          
-          <SettingsTab />
-         
+          <SettingsTab />          
         </div>
       </div>
     )
@@ -78,7 +77,7 @@ class Timer extends React.Component{
   render(){
     return(
       <div>
-        <div className="timer work spin" >
+        <div className="timer work" >
           <p id="timer-label" className="timer-label">Session</p>
           <p id="time-left" className="timer-numbers"> 25 : 00</p>        
         </div>
