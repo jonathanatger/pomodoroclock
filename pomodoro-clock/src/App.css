@@ -16,10 +16,15 @@ body {
 }
 
 .app {
-  padding: 40px;
   color: #eec2c2;
   font-style: #eec2c2;
-  height: 60vh;
+  height: 550px;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
 }
 
 .custom-border {
@@ -87,7 +92,6 @@ body {
 
 .settings-tab {
   position: absolute;
-  top: 51%;
   left: 50%;
   -webkit-transform: translateX(-50%);
           transform: translateX(-50%);

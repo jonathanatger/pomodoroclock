@@ -81,7 +81,7 @@ class Timer extends React.Component{
           <p id="timer-label" className="timer-label">Session</p>
           <p id="time-left" className="timer-numbers"> 25 : 00</p>        
         </div>
-        <div className="timer break" >
+        <div className="timer break spin" >
           <p id="timer-label-break" className="timer-label">Break</p>
           <p id="time-left-break" className="timer-numbers"> 25 : 00</p>        
         </div>
