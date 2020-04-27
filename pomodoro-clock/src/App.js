@@ -28,8 +28,15 @@ const initialState = {
 
 const runStateAction = (actiontype, rs) => {
   return({
-  type : actiontype,
+  type : RUNSTATE,
   runState : rs,
+  })
+}
+
+const settingsAction = (actiontype, workSg, breakSg) => {
+  return({
+  type : SETTINGS,
+  settings : {workSetting : workSg, breakSetting : breakSg},
   })
 }
 
@@ -42,7 +49,7 @@ const runStateReducer = (state =  runStates.work, action) => {
   }
 }
 
-const settingsReducer = (state = {workSetting : "01", breakSetting : "01"}, action) => {
+const settingsReducer = (state = {workSetting : "25", breakSetting : "05"}, action) => {
   switch (action.type){
     case SETTINGS :
       return {workSetting : action.workSetting, breakSetting : action.breakSetting };
@@ -83,7 +90,7 @@ class App extends React.Component {
         </div>
         <div className="app" >
           <ConnectedTimer />
-          <SettingsTab />     
+          <ConnectedSettingsTab />     
         </div>
       </div>
     )
@@ -104,10 +111,6 @@ class Timer extends React.Component{
       breakSec : "00"
     }
   }
-
- 
-  
-
   render(){
       return(
       <div>
@@ -124,9 +127,12 @@ class Timer extends React.Component{
   }
   
   controlInterval(){
-  if((this.state.workMin == "00" && this.state.workSec == "00")||(this.state.breakMin == "00" && this.state.breakSec == "00")){
+    if((this.props.workState == runStates.pause)){
+      clearInterval(this.timerInterval)
+    }
+    else if((this.state.workMin == "00" && this.state.workSec == "00")||(this.state.breakMin == "00" && this.state.breakSec == "00")){
     this.props.switchRunState(this.props.workState);
-    clearInterval(this.timerInterval)
+    clearInterval(this.timerInterval);
         
     this.setState( () => ({
         workMin : store.getState().settings.workSetting,
@@ -141,21 +147,30 @@ class Timer extends React.Component{
     }
   }
 
-  rotateComponent(id){
-    let elemClasslist = document.getElementById(id).classList
-    console.log(elemClasslist)
-    if(elemClasslist.contains("spin-to-bottom")){
-      elemClasslist.remove("spin-to-bottom");
-      elemClasslist.add("spin-to-top");
-    }else if(elemClasslist.contains("spin-to-top")){
-      elemClasslist.remove("spin-to-top");
-      elemClasslist.add("spin-to-bottom");
-    }else{
-      elemClasslist.add("spin-to-bottom");
-    }
-    ;    
+  rotateComponent(id){    
+    let elem = document.getElementById(id)
+
+    const rotation = function(el, time, start, degrees){
+      let i = start;
+      let inter = setInterval(
+        (elem) =>{
+          if (i<= start+degrees){
+            el.style.transform = `translateX(-50%) rotate(${i}deg)`
+            el.style.WebkitTransform = `translateX(-50%) rotate(${i}deg)`
+            el.style.MozTransform = `translateX(-50%) rotate(${i}deg)`
+            el.style.OTransform = `translateX(-50%) rotate(${i}deg)`
+            i += 0.5          }
+          else {clearInterval(inter)}},
+        time/(degrees*2))
+      }
+      
+      if((id == "timer-work" && this.props.workState == runStates.break)||
+      (id == "timer-break" && this.props.workState == runStates.work)){
+      rotation(elem, 2000, 0, 180);
+      }else{rotation(elem, 2000, 180, 180);}
   }
 
+    //Given an input of the curren time, outputs the time one second later
   updateTimer = function(mins, secs){
     let _newMins = mins;
     let _newSecs = secs;
@@ -181,6 +196,7 @@ class Timer extends React.Component{
     return {mins : _newMins.toString(), secs : _newSecs.toString()}    
   }
 
+  //given the current state, makes the appropriate changes to the timer
   updateComponentTime(){
     if (this.props.workState == runStates.work && (this.state.workMin != "00" || this.state.workSec != "00")){
       this.timerInterval = setInterval( () => {
@@ -194,10 +210,8 @@ class Timer extends React.Component{
             })
           )
         this.controlInterval();
-        
         }      
-          , 50)
-         
+          , 1000)
       } 
     else if (this.props.workState == runStates.break && (this.state.breakMin != "00" || this.state.breakSec != "00")){
         this.timerInterval = setInterval( () => {
@@ -210,22 +224,19 @@ class Timer extends React.Component{
 
           }))
           this.controlInterval();
-            }, 50)
-        } 
-     
-
+            }, 1000)
+        }
+    else if (this.workState == runStates.pause){
+      try{clearInterval(this.timerInterval);}
+      catch{}
+    }
   }
 
   componentDidMount(){
    this.updateComponentTime()
   }
-
-  
+  //End of Timer
 }
-
-  
-  
-
 
 //React-Redux timer
 const mapStateToPropTimer = (state) => {
@@ -249,15 +260,23 @@ const ConnectedTimer = connect(mapStateToPropTimer, mapDispatchToStateTimer)(Tim
 class SettingsTab extends React.Component{
   constructor(props){
     super(props);
+      this.changeState = this.changeState.bind(this)
+  }
+  changeState(){
+    if(store.getState().runState == (runStates.work||runStates.break)){
+      this.props.pauseRunState();
+      //document.getElementById("reset").innerHTML ="Clicked"
+    }
   }
 
+ 
   render(){
     return(
       <div className="settings-tab" >
          <div className='custom-border'></div>
         <div className="timer-controls">
           <button id="start_stop" >Go/Stop</button>
-          <button id="reset" >Reset</button>
+          <button id="reset" onClick={this.changeState} >Reset</button>
         </div>
         <div className="settings flex-row ">
           <h3 id="break-label">Break length</h3>
@@ -281,6 +300,16 @@ class SettingsTab extends React.Component{
   }
 
 }
+
+const mapDispatchToStateSettings = dispatch => {return{
+  pauseRunState : () => dispatch(runStateAction(RUNSTATE, runStates.pause)),
+  breakRunState : () => dispatch(runStateAction(RUNSTATE, runStates.break)),
+  workRunState : () => dispatch(runStateAction(RUNSTATE, runStates.work))  ,
+  setWorkSetting : (ws, bs) => dispatch( settingsAction(SETTINGS, ws, bs))      
+  }
+}
+
+const ConnectedSettingsTab = connect(null, mapDispatchToStateSettings)(SettingsTab)
 
 
 
