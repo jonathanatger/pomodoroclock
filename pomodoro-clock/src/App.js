@@ -42,7 +42,7 @@ const runStateReducer = (state =  runStates.work, action) => {
   }
 }
 
-const settingsReducer = (state = {workSetting : "01", breakSetting : "05"}, action) => {
+const settingsReducer = (state = {workSetting : "01", breakSetting : "01"}, action) => {
   switch (action.type){
     case SETTINGS :
       return {workSetting : action.workSetting, breakSetting : action.breakSetting };
@@ -84,7 +84,6 @@ class App extends React.Component {
         <div className="app" >
           <ConnectedTimer />
           <SettingsTab />     
-          <h1 id="console">Console</h1>     
         </div>
       </div>
     )
@@ -96,6 +95,8 @@ class Timer extends React.Component{
   constructor(props){
     super(props);
     this.controlInterval = this.controlInterval.bind(this);
+    this.updateComponentTime = this.updateComponentTime.bind(this);
+    this.rotateComponent = this.rotateComponent.bind(this);
     this.state = {
       workMin : store.getState()["settings"].workSetting,
       workSec : "00",
@@ -104,13 +105,64 @@ class Timer extends React.Component{
     }
   }
 
+ 
+  
+
+  render(){
+      return(
+      <div>
+        <div className="timer work" id="timer-work">
+          <p id="timer-label" className="timer-label">Session</p>
+          <p id="time-left" className="timer-numbers">{this.state.workMin + ":" + this.state.workSec}</p>        
+        </div>
+        <div className="timer break" id="timer-break">
+          <p id="timer-label-break" className="timer-label">Break</p>
+          <p id="time-left-break" className="timer-numbers">{this.state.breakMin + ":" + this.state.breakSec}</p>        
+        </div>
+      </div>
+    )
+  }
+  
+  controlInterval(){
+  if((this.state.workMin == "00" && this.state.workSec == "00")||(this.state.breakMin == "00" && this.state.breakSec == "00")){
+    this.props.switchRunState(this.props.workState);
+    clearInterval(this.timerInterval)
+        
+    this.setState( () => ({
+        workMin : store.getState().settings.workSetting,
+        workSec : "00" ,
+        breakMin : store.getState().settings.breakSetting,
+        breakSec :"00" 
+          })
+        )    
+        this.updateComponentTime();
+        this.rotateComponent("timer-work");  
+        this.rotateComponent("timer-break"); 
+    }
+  }
+
+  rotateComponent(id){
+    let elemClasslist = document.getElementById(id).classList
+    console.log(elemClasslist)
+    if(elemClasslist.contains("spin-to-bottom")){
+      elemClasslist.remove("spin-to-bottom");
+      elemClasslist.add("spin-to-top");
+    }else if(elemClasslist.contains("spin-to-top")){
+      elemClasslist.remove("spin-to-top");
+      elemClasslist.add("spin-to-bottom");
+    }else{
+      elemClasslist.add("spin-to-bottom");
+    }
+    ;    
+  }
+
   updateTimer = function(mins, secs){
     let _newMins = mins;
     let _newSecs = secs;
 
     if(mins=="00" && secs=="00"){
-      //_newMins = "00"
-      _newSecs = _newSecs -1;
+      _newMins = "00"
+      _newSecs = "00";
     }else if(secs == "00"){
       _newMins = _newMins -1;
       _newMins = _newMins.toString();
@@ -129,40 +181,7 @@ class Timer extends React.Component{
     return {mins : _newMins.toString(), secs : _newSecs.toString()}    
   }
 
-  
-
-  render(){
-      return(
-      <div>
-        <div className="timer work" >
-          <p id="timer-label" className="timer-label">Session</p>
-          <p id="time-left" className="timer-numbers">{this.state.workMin + ":" + this.state.workSec}</p>        
-        </div>
-        <div className="timer break" >
-          <p id="timer-label-break" className="timer-label">Break</p>
-          <p id="time-left-break" className="timer-numbers">{this.state.breakMin + ":" + this.state.breakSec}</p>        
-        </div>
-      </div>
-    )
-  }
-  
-  controlInterval(){
-  if(this.state.workMin == "00" && this.state.workSec == "00"){
-    this.props.switchRunState(this.props.workState);
-    clearInterval(this.timerInterval)
-        
-    this.setState( () => ({
-        workMin : store.getState().settings.workSetting,
-        workSec : "00" ,
-        breakMin : store.getState().settings.breakSetting,
-        breakSec :"00" 
-          })
-        )
-    }
-  }
-
-  
-  componentDidMount(){
+  updateComponentTime(){
     if (this.props.workState == runStates.work && (this.state.workMin != "00" || this.state.workSec != "00")){
       this.timerInterval = setInterval( () => {
         const newwTime = this.updateTimer(this.state.workMin, this.state.workSec);
@@ -177,28 +196,31 @@ class Timer extends React.Component{
         this.controlInterval();
         
         }      
-          , 100)
+          , 50)
          
       } 
-          
-      
-        else if (this.props.workState == runStates.break){
-            this.timerInterval = setInterval( () => {
-            const newbTime = this.updateTimer(this.state.breakMin, this.state.breakSec);          
-            this.setState( prevState => ({
-              workMin : prevState.workMin,
-              workSec : prevState.workSec,
-              breakMin : newbTime.mins,
-              breakSec : newbTime.secs     
+    else if (this.props.workState == runStates.break && (this.state.breakMin != "00" || this.state.breakSec != "00")){
+        this.timerInterval = setInterval( () => {
+          const newbTime = this.updateTimer(this.state.breakMin, this.state.breakSec);          
+          this.setState( prevState => ({
+            workMin : prevState.workMin,
+            workSec : prevState.workSec,
+            breakMin : newbTime.mins,
+            breakSec : newbTime.secs     
 
-            }))
-            this.controlInterval();
-              }, 1000)
+          }))
+          this.controlInterval();
+            }, 50)
         } 
      
+
   }
 
-    //End of Timer
+  componentDidMount(){
+   this.updateComponentTime()
+  }
+
+  
 }
 
   

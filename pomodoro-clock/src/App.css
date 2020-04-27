@@ -115,19 +115,41 @@ body {
           align-items: center;
 }
 
-.spin {
-  -webkit-animation-duration: 3s;
-          animation-duration: 3s;
-  -webkit-animation-name: App-spin;
-          animation-name: App-spin;
-  -webkit-animation-iteration-count: infinite;
-          animation-iteration-count: infinite;
-}
-
-@-webkit-keyframes App-spin {
+@-webkit-keyframes App-spin-bottom {
   from {
     -webkit-transform: translateX(-50%) rotate(0deg);
             transform: translateX(-50%) rotate(0deg);
+  }
+  to {
+    -webkit-transform: translateX(-50%) rotate(180deg);
+            transform: translateX(-50%) rotate(180deg);
+  }
+}
+
+@keyframes App-spin-bottom {
+  from {
+    -webkit-transform: translateX(-50%) rotate(0deg);
+            transform: translateX(-50%) rotate(0deg);
+  }
+  to {
+    -webkit-transform: translateX(-50%) rotate(180deg);
+            transform: translateX(-50%) rotate(180deg);
+  }
+}
+
+.spin-to-bottom {
+  -webkit-animation-name: App-spin-bottom;
+          animation-name: App-spin-bottom;
+  -webkit-animation-duration: 2s;
+          animation-duration: 2s;
+  -webkit-animation-fill-mode: forwards;
+          animation-fill-mode: forwards;
+}
+
+@-webkit-keyframes App-spin-top {
+  from {
+    -webkit-transform: translateX(-50%) rotate(180deg);
+            transform: translateX(-50%) rotate(180deg);
   }
   to {
     -webkit-transform: translateX(-50%) rotate(360deg);
@@ -135,15 +157,24 @@ body {
   }
 }
 
-@keyframes App-spin {
+@keyframes App-spin-top {
   from {
-    -webkit-transform: translateX(-50%) rotate(0deg);
-            transform: translateX(-50%) rotate(0deg);
+    -webkit-transform: translateX(-50%) rotate(180deg);
+            transform: translateX(-50%) rotate(180deg);
   }
   to {
     -webkit-transform: translateX(-50%) rotate(360deg);
             transform: translateX(-50%) rotate(360deg);
   }
+}
+
+.spin-to-top {
+  -webkit-animation-duration: 2s;
+          animation-duration: 2s;
+  -webkit-animation-name: App-spint-top;
+          animation-name: App-spint-top;
+  -webkit-animation-fill-mode: forwards;
+          animation-fill-mode: forwards;
 }
 
 .timer {
