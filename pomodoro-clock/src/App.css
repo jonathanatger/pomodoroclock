@@ -43,6 +43,8 @@ body {
   -webkit-box-direction: normal;
       -ms-flex-direction: row;
           flex-direction: row;
+  -ms-flex-pack: distribute;
+      justify-content: space-around;
 }
 
 .header {
@@ -84,10 +86,13 @@ body {
       -ms-flex-pack: justify;
           justify-content: space-between;
   width: 200px;
+  -ms-flex-wrap: nowrap;
+      flex-wrap: nowrap;
 }
 
 .settings h3 {
   margin: 0px;
+  font-size: 15px;
 }
 
 .settings-tab {

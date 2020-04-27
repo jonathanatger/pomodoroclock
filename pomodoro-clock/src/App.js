@@ -1,7 +1,7 @@
 import React from 'react';
 import './App.css';
 
-import {createStore} from 'redux';
+import {createStore, combineReducers} from 'redux';
 import {Provider, connect} from 'react-redux';
 
 
@@ -14,33 +14,49 @@ const runStates = {
 }
 
 //to implement
-const TIME = "time";
-const WORKSETTING = "worksetting";
-const BREAKSETTING = "breaksetting";
+const SETTINGS = "settings";
 
+/*
 const initialState = {
-  runState : runStates.pause
+  runState : runStates.pause,
+  settings : {
+    workSetting : "25",
+    breakSetting : "5"
+  }
 }
+*/
 
-const runStateAction = (rs) => {
+const runStateAction = (actiontype, rs) => {
   return({
-  type : RUNSTATE,
-  runState : rs
+  type : actiontype,
+  runState : rs,
   })
 }
 
-const reducer = (state = initialState, action) => {
+const runStateReducer = (state =  runStates.work, action) => {
   switch (action.type){
     case RUNSTATE :
-      return {
-        runState : action.runState
-      }
+      return action.runState;
     default : 
-      return initialState;
+      return state;
   }
 }
 
-const store = createStore(reducer);
+const settingsReducer = (state = {workSetting : "01", breakSetting : "05"}, action) => {
+  switch (action.type){
+    case SETTINGS :
+      return {workSetting : action.workSetting, breakSetting : action.breakSetting };
+    default :
+      return state;
+  }
+}
+
+const rootReducer = combineReducers({
+  runState : runStateReducer,
+  settings : settingsReducer
+})
+
+const store = createStore(rootReducer);
 
 
 
@@ -53,6 +69,11 @@ function Settings() {
 }
 
 class App extends React.Component {
+  constructor(props){
+    super(props);
+    
+  }
+
   render(){
     return(
       <div>
@@ -61,35 +82,147 @@ class App extends React.Component {
           
         </div>
         <div className="app" >
-          <Timer workState="Work" />
-          <SettingsTab />          
+          <ConnectedTimer />
+          <SettingsTab />     
+          <h1 id="console">Console</h1>     
         </div>
       </div>
     )
   }
 }
+
 
 class Timer extends React.Component{
   constructor(props){
     super(props);
+    this.controlInterval = this.controlInterval.bind(this);
+    this.state = {
+      workMin : store.getState()["settings"].workSetting,
+      workSec : "00",
+      breakMin : store.getState()["settings"].breakSetting,
+      breakSec : "00"
+    }
   }
 
+  updateTimer = function(mins, secs){
+    let _newMins = mins;
+    let _newSecs = secs;
+
+    if(mins=="00" && secs=="00"){
+      //_newMins = "00"
+      _newSecs = _newSecs -1;
+    }else if(secs == "00"){
+      _newMins = _newMins -1;
+      _newMins = _newMins.toString();
+      if (_newMins.length == 1){
+        _newMins = "0" + _newMins
+      }    
+      _newSecs = "59"
+    } else {
+      _newSecs = _newSecs - 1;
+      _newSecs = _newSecs.toString();
+      if (_newSecs.length == 1){
+        _newSecs = "0" + _newSecs
+      }    
+    }
+
+    return {mins : _newMins.toString(), secs : _newSecs.toString()}    
+  }
+
+  
+
   render(){
-    return(
+      return(
       <div>
         <div className="timer work" >
           <p id="timer-label" className="timer-label">Session</p>
-          <p id="time-left" className="timer-numbers"> 25 : 00</p>        
+          <p id="time-left" className="timer-numbers">{this.state.workMin + ":" + this.state.workSec}</p>        
         </div>
         <div className="timer break" >
           <p id="timer-label-break" className="timer-label">Break</p>
-          <p id="time-left-break" className="timer-numbers"> 5 : 00</p>        
+          <p id="time-left-break" className="timer-numbers">{this.state.breakMin + ":" + this.state.breakSec}</p>        
         </div>
       </div>
     )
   }
+  
+  controlInterval(){
+  if(this.state.workMin == "00" && this.state.workSec == "00"){
+    this.props.switchRunState(this.props.workState);
+    clearInterval(this.timerInterval)
+        
+    this.setState( () => ({
+        workMin : store.getState().settings.workSetting,
+        workSec : "00" ,
+        breakMin : store.getState().settings.breakSetting,
+        breakSec :"00" 
+          })
+        )
+    }
+  }
 
+  
+  componentDidMount(){
+    if (this.props.workState == runStates.work && (this.state.workMin != "00" || this.state.workSec != "00")){
+      this.timerInterval = setInterval( () => {
+        const newwTime = this.updateTimer(this.state.workMin, this.state.workSec);
+        
+        this.setState( prevState => ({
+          workMin : newwTime.mins,
+          workSec : newwTime.secs ,
+          breakMin : prevState.breakMin,
+          breakSec : prevState.breakSec  
+            })
+          )
+        this.controlInterval();
+        
+        }      
+          , 100)
+         
+      } 
+          
+      
+        else if (this.props.workState == runStates.break){
+            this.timerInterval = setInterval( () => {
+            const newbTime = this.updateTimer(this.state.breakMin, this.state.breakSec);          
+            this.setState( prevState => ({
+              workMin : prevState.workMin,
+              workSec : prevState.workSec,
+              breakMin : newbTime.mins,
+              breakSec : newbTime.secs     
+
+            }))
+            this.controlInterval();
+              }, 1000)
+        } 
+     
+  }
+
+    //End of Timer
 }
+
+  
+  
+
+
+//React-Redux timer
+const mapStateToPropTimer = (state) => {
+  return({
+    workState : state.runState
+})}
+
+const mapDispatchToStateTimer = dispatch => {
+  return {
+    switchRunState : currentRunState => {if(currentRunState == runStates.work){
+      dispatch(runStateAction(RUNSTATE, runStates.break))
+      } else {dispatch(runStateAction(RUNSTATE, runStates.work))}
+    }
+  }  
+}
+
+const ConnectedTimer = connect(mapStateToPropTimer, mapDispatchToStateTimer)(Timer)
+
+
 
 class SettingsTab extends React.Component{
   constructor(props){
@@ -104,17 +237,21 @@ class SettingsTab extends React.Component{
           <button id="start_stop" >Go/Stop</button>
           <button id="reset" >Reset</button>
         </div>
-        <div className="settings flex-row">
+        <div className="settings flex-row ">
           <h3 id="break-label">Break length</h3>
-          <h3 id="break-increment">^</h3>
-          <h3 id="break-length"> 5:00</h3>
-          <h3 id="break-decrement">!</h3>          
+          <div className="flex-row set-ctrls">
+            <h3 id="break-increment"><i className="fa fa-arrow-up"></i></h3> 
+            <h3 id="break-length"> 5:00</h3>
+            <h3 id="break-decrement"><i className="fa fa-arrow-down"></i></h3>  
+          </div>        
         </div>
         <div className="settings flex-row">
           <h3 id="session-label">Session length</h3>
-          <h3 id="session-increment">^</h3>
-          <h3 id="session-length"> 25:00</h3>
-          <h3 id="session-decrement">!</h3>           
+          <div className="flex-row set-ctrls">
+            <h3 id="session-increment"><i class="fa fa-arrow-up"></i></h3>
+            <h3 id="session-length"> 25:00</h3>
+            <h3 id="session-decrement"><i class="fa fa-arrow-down"></i></h3> 
+          </div>          
         </div>
         <div className='custom-border'></div>
       </div>
@@ -138,3 +275,6 @@ function AppWrapper() {
 }
 
 export default AppWrapper;
+
+const st = store.getState().settings.workSetting;
+console.log(st)
