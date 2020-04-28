@@ -1,79 +1,16 @@
 import React from 'react';
 import './App.css';
 
-import {createStore, combineReducers} from 'redux';
 import {Provider, connect} from 'react-redux';
+import {store, sessionStatusAction, runningAction, settingsAction, timerAction} from './redux.js'
 
-
-// Redux ----------------
-const RUNSTATE = "runstate";
-const runStates = {
-  pause : "pause",
-  work : "work",
-  break : "break"
-}
-
-//to implement
-const SETTINGS = "settings";
-
-/*
-const initialState = {
-  runState : runStates.pause,
-  settings : {
-    workSetting : "25",
-    breakSetting : "5"
-  }
-}
-*/
-
-const runStateAction = (actiontype, rs) => {
-  return({
-  type : RUNSTATE,
-  runState : rs,
-  })
-}
-
-const settingsAction = (actiontype, workSg, breakSg) => {
-  return({
-  type : SETTINGS,
-  settings : {workSetting : workSg, breakSetting : breakSg},
-  })
-}
-
-const runStateReducer = (state =  runStates.work, action) => {
-  switch (action.type){
-    case RUNSTATE :
-      return action.runState;
-    default : 
-      return state;
-  }
-}
-
-const settingsReducer = (state = {workSetting : "25", breakSetting : "05"}, action) => {
-  switch (action.type){
-    case SETTINGS :
-      return {workSetting : action.workSetting, breakSetting : action.breakSetting };
-    default :
-      return state;
-  }
-}
-
-const rootReducer = combineReducers({
-  runState : runStateReducer,
-  settings : settingsReducer
-})
-
-const store = createStore(rootReducer);
-
-
+let RUNSTATE = require('./utils.js').RUNSTATE;
+let runStates = require('./utils.js').runStates;
+let SETTINGS = require('./utils.js').SETTINGS;
 
 //React -----------------------------
 
-function Settings() {
-  return (
-    <text id="break-label">break :</text>
-  )
-}
+
 
 class App extends React.Component {
   constructor(props){
@@ -101,31 +38,39 @@ class App extends React.Component {
 class Timer extends React.Component{
   constructor(props){
     super(props);
+    /*
     this.controlInterval = this.controlInterval.bind(this);
     this.updateComponentTime = this.updateComponentTime.bind(this);
     this.rotateComponent = this.rotateComponent.bind(this);
+    */
+    /*
     this.state = {
       workMin : store.getState()["settings"].workSetting,
       workSec : "00",
       breakMin : store.getState()["settings"].breakSetting,
-      breakSec : "00"
+      breakSec : "00",
     }
+    */
   }
+
+
   render(){
       return(
       <div>
         <div className="timer work" id="timer-work">
           <p id="timer-label" className="timer-label">Session</p>
-          <p id="time-left" className="timer-numbers">{this.state.workMin + ":" + this.state.workSec}</p>        
+          <p id="time-left" className="timer-numbers">{this.props.timer.workMinutes + ":" + this.props.timer.workSeconds}</p>        
         </div>
         <div className="timer break" id="timer-break">
           <p id="timer-label-break" className="timer-label">Break</p>
-          <p id="time-left-break" className="timer-numbers">{this.state.breakMin + ":" + this.state.breakSec}</p>        
+          <p id="time-left-break" className="timer-numbers">{this.props.timer.breakMinutes + ":" + this.props.timer.breakSeconds}</p>        
         </div>
       </div>
     )
   }
   
+  /*
+  //Shutsdown intervals and decides when the component rotates
   controlInterval(){
     if((this.props.workState == runStates.pause)){
       clearInterval(this.timerInterval)
@@ -147,6 +92,7 @@ class Timer extends React.Component{
     }
   }
 
+  // Allow the timers to rotate
   rotateComponent(id){    
     let elem = document.getElementById(id)
 
@@ -211,7 +157,7 @@ class Timer extends React.Component{
           )
         this.controlInterval();
         }      
-          , 1000)
+          , 100)
       } 
     else if (this.props.workState == runStates.break && (this.state.breakMin != "00" || this.state.breakSec != "00")){
         this.timerInterval = setInterval( () => {
@@ -224,16 +170,17 @@ class Timer extends React.Component{
 
           }))
           this.controlInterval();
-            }, 1000)
+            }, 100)
         }
     else if (this.workState == runStates.pause){
       try{clearInterval(this.timerInterval);}
       catch{}
     }
   }
+  */
 
   componentDidMount(){
-   this.updateComponentTime()
+   
   }
   //End of Timer
 }
@@ -241,7 +188,8 @@ class Timer extends React.Component{
 //React-Redux timer
 const mapStateToPropTimer = (state) => {
   return({
-    workState : state.runState
+    workState : state.runState,
+    timer : state.timer
 })}
 
 const mapDispatchToStateTimer = dispatch => {
@@ -255,17 +203,34 @@ const mapDispatchToStateTimer = dispatch => {
 
 const ConnectedTimer = connect(mapStateToPropTimer, mapDispatchToStateTimer)(Timer)
 
-
-
+//Component holding the settings controls to determine the timer behavior
 class SettingsTab extends React.Component{
   constructor(props){
     super(props);
       this.changeState = this.changeState.bind(this)
+      this.state ={
+        previousState : runStates.work
+      }
   }
+
+    // set the store state
   changeState(){
-    if(store.getState().runState == (runStates.work||runStates.break)){
+     let storeState = store.getState().runState.sessionStatus;
+    if(storeState == (runStates.work||runStates.break)){
+      
+      this.setState({
+        previousState : storeState
+      })
       this.props.pauseRunState();
-      //document.getElementById("reset").innerHTML ="Clicked"
+      document.getElementById("reset").innerHTML = store.getState().runState.toString()
+
+    } else if(storeState == runStates.pause && this.state.previousState == runStates.work){
+      this.props.workRunState();
+      document.getElementById("reset").innerHTML = store.getState().runState.toString()
+
+    } else if (storeState == runStates.pause && this.state.previousState == runStates.break){
+      this.props.breakRunState();
+      document.getElementById("reset").innerHTML = store.getState().runState.toString()
     }
   }
 
@@ -275,8 +240,8 @@ class SettingsTab extends React.Component{
       <div className="settings-tab" >
          <div className='custom-border'></div>
         <div className="timer-controls">
-          <button id="start_stop" >Go/Stop</button>
-          <button id="reset" onClick={this.changeState} >Reset</button>
+          <button id="start_stop" onClick={this.changeState}>Go/Stop</button>
+          <button id="reset"  >Reset</button>
         </div>
         <div className="settings flex-row ">
           <h3 id="break-label">Break length</h3>
@@ -302,7 +267,7 @@ class SettingsTab extends React.Component{
 }
 
 const mapDispatchToStateSettings = dispatch => {return{
-  pauseRunState : () => dispatch(runStateAction(RUNSTATE, runStates.pause)),
+  pauseRunState : () => dispatch(runStateAction(runStates, runStates.pause)),
   breakRunState : () => dispatch(runStateAction(RUNSTATE, runStates.break)),
   workRunState : () => dispatch(runStateAction(RUNSTATE, runStates.work))  ,
   setWorkSetting : (ws, bs) => dispatch( settingsAction(SETTINGS, ws, bs))      
