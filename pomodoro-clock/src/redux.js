@@ -30,6 +30,31 @@ export const settingsAction = (workSg, breakSg) => {
   })
 }
 
+export const workSettingsIncrementAction = () => {
+  return({
+    type : "INCREMENT-WS",    
+  })
+}
+
+export const workSettingsDecrementAction = () => {
+  return({
+    type : "DECREMENT-WS",    
+  })
+}
+
+export const breakSettingsIncrementAction = () => {
+  return({
+    type : "INCREMENT-BS",    
+  })
+}
+
+export const breakSettingsDecrementAction = () => {
+  return({
+    type : "DECREMENT-BS",    
+  })
+}
+
+
 export const timerAction = (workMin, workSec, breakMin, breakSec) => {
   return({
     type : TIMERSET,
@@ -42,12 +67,12 @@ export const timerAction = (workMin, workSec, breakMin, breakSec) => {
   })
 }
 
-const sessionStatusReducer = (state = runStates.pause, action) => {
+const sessionStatusReducer = (state = runStates.work, action) => {
   switch (action.type){
     case runStates.work :
-      return {sessionStatus : runStates.work, running : state.running};
+      return runStates.work;
     case runStates.break :
-      return {sessionStatus : runStates.break, running : state.running}
+      return runStates.break;
     default : 
       return state;
   }
@@ -64,11 +89,30 @@ const runningStatusReducer = (state = runStates.pause, action) => {
   }
 }
 
-const settingsReducer = (state = {workSetting : "1", breakSetting : "05"}, action) => {
+
+
+const settingsReducer = (state = {workSetting : "25", breakSetting : "05"}, action) => {
   switch (action.type){
     case SETTINGS :
       initialState.workSetting = action.settings.workSetting;
       initialState.breakSetting = action.settings.breakSetting;
+      return initialState;
+    case "INCREMENT-WS" :
+      let IWS = (state.workSetting + 1).toString();
+      if(IWS < 60) { initialState.workSetting = IWS.length > 1 ? IWS : "0" + IWS }      
+      return initialState;
+    case "DECREMENT-WS" :
+      let DWS = (state.workSetting - 1).toString();
+      if(DWS > 1) { initialState.workSetting = DWS.length > 1 ? DWS : "0" + DWS }      
+      return initialState;
+      
+    case "INCREMENT-BS" :
+      let IBS = "32" ; 
+      if(IBS < 60) { initialState.breakSetting = IBS.length > 1 ? IBS : "0" + IBS }      
+      return initialState.assign();
+    case "DECREMENT-BS" :
+      let DBS = (state.breakSetting - 1).toString();
+      if(DBS > 1) { initialState.breakSetting = DBS.length > 1 ? DBS : "0" + DBS }      
       return initialState;
     default :
       return state;
@@ -97,4 +141,4 @@ const rootReducer = combineReducers({
   timer : timerReducer
 })
 
-export const store = createStore(rootReducer);
+export const store = createStore(rootReducer); 

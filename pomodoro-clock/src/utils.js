@@ -8,4 +8,7 @@ export const runStates = {
 
 //to implement
 export const SETTINGS = "settings";
+
+
+
 export const TIMERSET = "timerset";
