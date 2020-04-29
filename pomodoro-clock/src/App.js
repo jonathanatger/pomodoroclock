@@ -23,7 +23,8 @@ class App extends React.Component {
         </div>
         <div className="app" >
           <ConnectedTimer />
-          <ConnectedSettingsTab />     
+          <ConnectedSettingsTab />  
+          <h1 id="console">Cons</h1>   
         </div>
       </div>
     )
@@ -205,6 +206,7 @@ class SettingsTab extends React.Component{
     super(props);
       this.changeRunningState = this.changeRunningState.bind(this)
       this.changeSessionState = this.changeSessionState.bind(this)
+
   }
       
 
@@ -235,10 +237,7 @@ class SettingsTab extends React.Component{
     }
  }
   
-  reset(){
-    
-  }
-
+ 
 
  
   render(){
@@ -253,7 +252,7 @@ class SettingsTab extends React.Component{
           <h3 id="break-label">Break length</h3>
           <div className="flex-row set-ctrls">
             <h3 id="break-increment" onClick={this.props.incBreakSetting} ><i className="fa fa-arrow-up"></i></h3> 
-            <h3 id="break-length">{store.getState().settings.breakSetting + ":00"}</h3>
+            <h3 id="break-length">{this.props.bSetting + ":00"}</h3>
             <h3 id="break-decrement"onClick={this.props.decBreakSetting}><i className="fa fa-arrow-down"></i></h3>  
           </div>        
         </div>
@@ -261,7 +260,7 @@ class SettingsTab extends React.Component{
           <h3 id="session-label">Session length</h3>
           <div className="flex-row set-ctrls">
             <h3 id="session-increment" onClick={this.props.incWorkSetting}><i class="fa fa-arrow-up"></i></h3>
-            <h3 id="session-length">{store.getState().settings.workSetting + ":00"}</h3>
+            <h3 id="session-length">{this.props.wSetting + ":00"}</h3>
             <h3 id="session-decrement" onClick={this.props.decWorkSetting}><i class="fa fa-arrow-down"></i></h3> 
           </div>          
         </div>
@@ -281,16 +280,24 @@ const mapDispatchToStateSettings = dispatch => { return{
   decWorkSetting : () => dispatch( workSettingsDecrementAction())      ,
   incBreakSetting : () => dispatch( breakSettingsIncrementAction())      ,
   decBreakSetting : () => dispatch( breakSettingsDecrementAction())      ,
-  resetTimer : () => dispatch(timerAction(
-            store.getState().settings.workSetting,
-            "00",
-            store.getState().settings.breakSetting,
-            "00"
-            )) 
+  resetTimer : () => {
+    dispatch(timerAction(store.getState().settings.workSetting, "00",
+                        store.getState().settings.breakSetting, "00"  ));
+    dispatch(runningStatusAction(runStates.pause))
+            
+    }
   }
 }
 
-const ConnectedSettingsTab = connect(null, mapDispatchToStateSettings)(SettingsTab)
+  
+
+const mapStateToPropSettings = state => ({
+    wSetting : state.settings.workSetting,
+    bSetting : state.settings.breakSetting
+  })
+
+
+const ConnectedSettingsTab = connect(mapStateToPropSettings, mapDispatchToStateSettings)(SettingsTab)
 
 
 

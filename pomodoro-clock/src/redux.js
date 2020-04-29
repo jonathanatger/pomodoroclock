@@ -98,22 +98,31 @@ const settingsReducer = (state = {workSetting : "25", breakSetting : "05"}, acti
       initialState.breakSetting = action.settings.breakSetting;
       return initialState;
     case "INCREMENT-WS" :
-      let IWS = (state.workSetting + 1).toString();
-      if(IWS < 60) { initialState.workSetting = IWS.length > 1 ? IWS : "0" + IWS }      
-      return initialState;
+      let IWSint = parseInt(state.workSetting) + 1
+      document.getElementById("console").innerHTML = IWSint.toString()
+      let IWS = IWSint.toString();
+      if(IWSint < 60) { initialState.workSetting = IWS.length > 1 ? IWS : "0" + IWS }      
+      return Object.assign({}, initialState);
     case "DECREMENT-WS" :
-      let DWS = (state.workSetting - 1).toString();
+      let DWSint = parseInt(state.workSetting) - 1
+      let DWS = DWSint.toString();
+      document.getElementById("console").innerHTML = DWSint.toString()
       if(DWS > 1) { initialState.workSetting = DWS.length > 1 ? DWS : "0" + DWS }      
-      return initialState;
+      return Object.assign({}, initialState);
       
     case "INCREMENT-BS" :
-      let IBS = "32" ; 
-      if(IBS < 60) { initialState.breakSetting = IBS.length > 1 ? IBS : "0" + IBS }      
-      return initialState.assign();
+      let IBSint = parseInt(state.breakSetting) + 1; 
+      let IBS = IBSint.toString();
+      if(IBS < 60) { initialState.breakSetting = IBS.length > 1 ? IBS : "0" + IBS }   
+        
+      return Object.assign({}, initialState);
+
     case "DECREMENT-BS" :
-      let DBS = (state.breakSetting - 1).toString();
-      if(DBS > 1) { initialState.breakSetting = DBS.length > 1 ? DBS : "0" + DBS }      
-      return initialState;
+      let DBSint = parseInt(state.breakSetting) - 1; 
+      let DBS = DBSint.toString();
+      if(DBS > 1) { initialState.breakSetting = DBS.length > 1 ? DBS : "0" + DBS }  
+            
+      return Object.assign({}, initialState);
     default :
       return state;
   }
