@@ -27,6 +27,11 @@ body {
           align-items: center;
 }
 
+.canvas {
+  position: absolute;
+  top: 0;
+}
+
 .custom-border {
   left: 50%;
   height: 1px;

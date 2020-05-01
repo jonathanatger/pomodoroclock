@@ -21,10 +21,9 @@ class App extends React.Component {
           <h1 className="main-title">Pomodoro Clock</h1>
           
         </div>
-        <div className="app" >
+        <div className="app" id="app" >
           <ConnectedTimer />
-          <ConnectedSettingsTab />  
-          <h1 id="console">Cons</h1>   
+          <ConnectedSettingsTab />             
         </div>
       </div>
     )
@@ -33,153 +32,46 @@ class App extends React.Component {
 
 
 class Timer extends React.Component{
-  constructor(props){
-    super(props);
-    /*
-    this.controlInterval = this.controlInterval.bind(this);
-    this.updateComponentTime = this.updateComponentTime.bind(this);
-    this.rotateComponent = this.rotateComponent.bind(this);
-    */
-    /*
-    this.state = {
-      workMin : store.getState()["settings"].workSetting,
-      workSec : "00",
-      breakMin : store.getState()["settings"].breakSetting,
-      breakSec : "00",
-    }
-    */
+  
+  componentDidMount(){
+    let c = document.getElementById("canvas", {antialias : true, depth : true});
+    let ctx = c.getContext("2d");
+    let radius = 160;
+    ctx.strokeStyle = "rgb(238, 194, 194)";
+    ctx.lineWidth = 3;
+    
+    ctx.beginPath();
+    ctx.arc(210,210, radius, 0.7 * Math.PI, 1.3 * Math.PI);    
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.arc(210,210, radius, 1.7 * Math.PI, 2 * Math.PI);
+    ctx.stroke()
+    
+
+    ctx.beginPath();
+    ctx.arc(210,210, radius, 0, 0.3 * Math.PI);
+    ctx.stroke()
   }
+  render(){   
 
-
-  render(){
       return(
       <div>
         <div className="timer work" id="timer-work">
+           
           <p id="timer-label" className="timer-label">Session</p>
-          <p id="time-left" className="timer-numbers">{this.props._timer.workMinutes + ":" + this.props._timer.workSeconds}</p>        
+          <p id="time-left" className="timer-numbers">{this.props._timer.workMinutes + ":" + this.props._timer.workSeconds}</p> 
+          <canvas className="canvas" width="420px" height="420px" id="canvas"></canvas>      
         </div>
         <div className="timer break" id="timer-break">
           <p id="timer-label-break" className="timer-label">Break</p>
           <p id="time-left-break" className="timer-numbers">{this.props._timer.breakMinutes + ":" + this.props._timer.breakSeconds}</p>        
         </div>
+        
       </div>
     )
   }
-  
-                  /*
-                  //Shutsdown intervals and decides when the component rotates
-                  controlInterval(){
-                    if((this.props.workState == runStates.pause)){
-                      clearInterval(this.timerInterval)
-                    }
-                    else if((this.state.workMin == "00" && this.state.workSec == "00")||(this.state.breakMin == "00" && this.state.breakSec == "00")){
-                    this.props.switchRunState(this.props.workState);
-                    clearInterval(this.timerInterval);
-                        
-                    this.setState( () => ({
-                        workMin : store.getState().settings.workSetting,
-                        workSec : "00" ,
-                        breakMin : store.getState().settings.breakSetting,
-                        breakSec :"00" 
-                          })
-                        )    
-                        this.updateComponentTime();
-                        this.rotateComponent("timer-work");  
-                        this.rotateComponent("timer-break"); 
-                    }
-                  }
-
-                  // Allow the timers to rotate
-                  rotateComponent(id){    
-                    let elem = document.getElementById(id)
-
-                    const rotation = function(el, time, start, degrees){
-                      let i = start;
-                      let inter = setInterval(
-                        (elem) =>{
-                          if (i<= start+degrees){
-                            el.style.transform = `translateX(-50%) rotate(${i}deg)`
-                            el.style.WebkitTransform = `translateX(-50%) rotate(${i}deg)`
-                            el.style.MozTransform = `translateX(-50%) rotate(${i}deg)`
-                            el.style.OTransform = `translateX(-50%) rotate(${i}deg)`
-                            i += 0.5          }
-                          else {clearInterval(inter)}},
-                        time/(degrees*2))
-                      }
-                      
-                      if((id == "timer-work" && this.props.workState == runStates.break)||
-                      (id == "timer-break" && this.props.workState == runStates.work)){
-                      rotation(elem, 2000, 0, 180);
-                      }else{rotation(elem, 2000, 180, 180);}
-                  }
-
-                    //Given an input of the curren time, outputs the time one second later
-                  updateTimer = function(mins, secs){
-                    let _newMins = mins;
-                    let _newSecs = secs;
-
-                    if(mins=="00" && secs=="00"){
-                      _newMins = "00"
-                      _newSecs = "00";
-                    }else if(secs == "00"){
-                      _newMins = _newMins -1;
-                      _newMins = _newMins.toString();
-                      if (_newMins.length == 1){
-                        _newMins = "0" + _newMins
-                      }    
-                      _newSecs = "59"
-                    } else {
-                      _newSecs = _newSecs - 1;
-                      _newSecs = _newSecs.toString();
-                      if (_newSecs.length == 1){
-                        _newSecs = "0" + _newSecs
-                      }    
-                    }
-
-                    return {mins : _newMins.toString(), secs : _newSecs.toString()}    
-                  }
-
-                  //given the current state, makes the appropriate changes to the timer
-                  updateComponentTime(){
-                    if (this.props.workState == runStates.work && (this.state.workMin != "00" || this.state.workSec != "00")){
-                      this.timerInterval = setInterval( () => {
-                        const newwTime = this.updateTimer(this.state.workMin, this.state.workSec);
-                        
-                        this.setState( prevState => ({
-                          workMin : newwTime.mins,
-                          workSec : newwTime.secs ,
-                          breakMin : prevState.breakMin,
-                          breakSec : prevState.breakSec  
-                            })
-                          )
-                        this.controlInterval();
-                        }      
-                          , 100)
-                      } 
-                    else if (this.props.workState == runStates.break && (this.state.breakMin != "00" || this.state.breakSec != "00")){
-                        this.timerInterval = setInterval( () => {
-                          const newbTime = this.updateTimer(this.state.breakMin, this.state.breakSec);          
-                          this.setState( prevState => ({
-                            workMin : prevState.workMin,
-                            workSec : prevState.workSec,
-                            breakMin : newbTime.mins,
-                            breakSec : newbTime.secs     
-
-                          }))
-                          this.controlInterval();
-                            }, 100)
-                        }
-                    else if (this.workState == runStates.pause){
-                      try{clearInterval(this.timerInterval);}
-                      catch{}
-                    }
-                  }
-                  */
-
-  componentDidMount(){
-   
-  }
-  //End of Timer
+                  
 }
 
 //React-Redux timer
@@ -208,32 +100,22 @@ class SettingsTab extends React.Component{
       this.changeSessionState = this.changeSessionState.bind(this)
 
   }
-      
-
     // set the store state
   changeRunningState(){
     let storeRunningState = store.getState().runningStatus;
-     
     if(storeRunningState == runStates.pause){
       this.props.runRunState();
-      document.getElementById("start_stop").innerHTML = store.getState().runningStatus.toString()
-
     } else if(storeRunningState == runStates.running){
       this.props.pauseRunState();
-      document.getElementById("start_stop").innerHTML = store.getState().runningStatus.toString()
     }
   }
 
   changeSessionState(){
     let storeSessionState = store.getState().sessionStatus;
-
     if(storeSessionState == runStates.work){
      this.props.breakRunState();
-     document.getElementById("reset").innerHTML = store.getState().sessionStatus.toString()
-
     } else if(storeSessionState == runStates.break){
      this.props.workRunState();
-     document.getElementById("reset").innerHTML = store.getState().sessionStatus.toString()
     }
  }
   
@@ -268,12 +150,11 @@ class SettingsTab extends React.Component{
       </div>
     )
   }
-
 }
 
 const mapDispatchToStateSettings = dispatch => { return{
-  pauseRunState : () => dispatch(runningStatusAction(runStates.pause)),
-  runRunState : () => dispatch(runningStatusAction(runStates.running)),
+  pauseRunState : () => dispatch(runningStatusAction(runStates.pause, store.getState().sessionStatus)),
+  runRunState : () => dispatch(runningStatusAction(runStates.running, store.getState().sessionStatus)),
   breakRunState : () => dispatch(sessionStatusAction(runStates.break)),
   workRunState : () => dispatch(sessionStatusAction(runStates.work))  ,
   incWorkSetting : () => dispatch( workSettingsIncrementAction())      ,
@@ -283,12 +164,24 @@ const mapDispatchToStateSettings = dispatch => { return{
   resetTimer : () => {
     dispatch(timerAction(store.getState().settings.workSetting, "00",
                         store.getState().settings.breakSetting, "00"  ));
-    dispatch(runningStatusAction(runStates.pause))
-            
+    dispatch(runningStatusAction(runStates.pause, store.getState().sessionStatus));
+    dispatch(sessionStatusAction(runStates.work));
+    setTimeout(() => {
+    let elem = document.getElementById("timer-work") 
+      elem.style.transform = `translateX(-50%) rotate(0deg)`
+      elem.style.WebkitTransform = `translateX(-50%) rotate(0deg)`
+      elem.style.MozTransform = `translateX(-50%) rotate(0deg)`
+      elem.style.OTransform = `translateX(-50%) rotate(0deg)`
+    let elem2 = document.getElementById("timer-break") 
+      elem2.style.transform = `translateX(-50%) rotate(180deg)`
+      elem2.style.WebkitTransform = `translateX(-50%) rotate(180deg)`
+      elem2.style.MozTransform = `translateX(-50%) rotate(180deg)`
+      elem2.style.OTransform = `translateX(-50%) rotate(180deg)`},
+      2000)
+                     
     }
   }
 }
-
   
 
 const mapStateToPropSettings = state => ({
