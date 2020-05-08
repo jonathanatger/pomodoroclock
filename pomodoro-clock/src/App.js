@@ -9,9 +9,6 @@ let runStates = require('./utils.js').runStates;
 let SETTINGS = require('./utils.js').SETTINGS;
 
 //React -----------------------------
-
-
-
 class App extends React.Component {
   
   render(){
